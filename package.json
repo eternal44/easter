@@ -1,0 +1,14 @@
+{
+  "name": "easter",
+  "version": "1.0.0",
+  "description": "csv parser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "James Youn <jamesyoun710@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "xlsx-style": "0.8.13"
+  }
+}
