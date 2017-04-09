@@ -1,5 +1,5 @@
 var XLSX = require('xlsx-style');
-var workbook = XLSX.readFile('./Test.xlsx', {cellStyles:true});
+var workbook = XLSX.readFile('./test.xlsx', {cellStyles:true});
 var libreconv = require('libreconv').convert;
 var path = require('path');
 
@@ -19,22 +19,22 @@ var headerRow = Object.keys(sheet).reduce(function(memo, key) {
 var charArray = "ABCDEFGHI".split('')
 var currentRowNumber = 2
 
-var sortedArtistMap = Object.keys(sheet).reduce(function(memo, key) {
-  if (key.slice(1) == 1 ) return memo
+var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
+  if (cellNumber.slice(1) == 1 ) return memo
 
-  if (key[0] == 'A') {
+  if (cellNumber[0] == 'A') {
     var artistDetails = charArray.map(function(letter) {
       var cellLocation = letter + currentRowNumber
 
       return sheet[cellLocation]
     })
 
-    var artistName = sheet[key].v
+    var artistName = sheet[cellNumber].v
 
     if(!(artistName in memo)) {
       var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
       memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
-      memo[artistName][artistRowCounter] = 1
+      memo[artistName][artistRowCounter] = 2
     } else {
       var artistRowCounter = ++memo[artistName][artistRowCounter]
       var remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
@@ -45,6 +45,8 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, key) {
 
   return memo
 }, {})
+
+
 // [ 'Leann Yan', 'Stacey Test', 'Mary Jane'  ]
 // console.info(Object.keys(sortedArtistMap['Stacey Test']).length) //63 - includes header
 // console.info(Object.keys(sortedArtistMap['Mary Jane']).length) //63 - includes header
@@ -82,7 +84,6 @@ function generateExcelFile(sortedArtistMap) {
     var workBookBody = sortedArtistMap[artist]
 
     var artistCommissionTotal = calculateArtistCommissionTotal(workBookBody)
-    // if(artist == 'Leann Yan') console.log(workBookBody)
     var lastRowNumber = findLastRowNumberOnColumn(workBookBody, 'H')
 
     var commissionTotalCellLocation = 'H' + (lastRowNumber + 1)
@@ -107,16 +108,37 @@ function generateExcelFile(sortedArtistMap) {
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
     var wchColumnWidths = [
-      {wch: 5},
-      {wch: 5},
-      {wch: 15},
-      {wch: 7},
-      {wch: 10},
-      {wch: 30},
-      {wch: 5},
-      {wch: 10},
-      {wch: 5}
+      // TODO: decide what font size is good
+      //   then match wpx & wch to it
+      {wch: 10,
+        wpx: 40
+      },
+      {wch: 10,
+        wpx: 40
+      },
+      {wch: 15,
+        wpx: 60
+      },
+      {wch: 7,
+        wpx: 60
+      },
+      {wch: 17,
+        wpx: 70
+      },
+      {wch: 40,
+        wpx: 250
+      },
+      {wch: 20,
+        wpx: 70
+      },
+      {wch: 15,
+        wpx: 60
+      },
+      {wch: 10,
+        wpx: 80
+      }
     ]
+    // total column widths: 91
     workBookBody['!cols'] = wchColumnWidths
 
     var workbook = {
@@ -185,7 +207,6 @@ function findLastRowNumberOnColumn(workBookBody, column) {
     }
     return lastRowNumber
   }, 0)
-  console.log(result)
 
   return parseInt(result)
 }
