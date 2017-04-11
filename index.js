@@ -13,6 +13,7 @@ var headerRow = Object.keys(sheet).reduce(function(memo, key) {
 
 var charArray = "ABCDEFGHI".split('')
 var currentRowNumber = 2
+var range = sheet['!ref']
 
 var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
   if (cellNumber.slice(1) == 1 ) return memo
@@ -51,17 +52,8 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
 
 
 
-function convertFileToPDF(filePath, outputFormat, opts = {}) {
-  var opts = {
-    output: './convertedFiles/',
-    format: 'pdf'
-  }
-
-  libreconv(path.join(__dirname, filePath), outputFormat, opts)
-}
-
 function main() {
-  var completedFiles = generateExcelFile(sortedArtistMap)
+  var completedFiles = generateExcelFile(sortedArtistMap, range)
 
   completedFiles.forEach(function(file){
     convertFileToPDF(file, 'pdf')
@@ -71,11 +63,10 @@ function main() {
 main()
 
 
-function generateExcelFile(sortedArtistMap) {
+function generateExcelFile(sortedArtistMap, range) {
   var completedFiles = []
   for (var artist in sortedArtistMap ) {
-    // TODO: dynamically define
-    var range = "A1:I136";
+    var range = range;
 
     var workBookBody = sortedArtistMap[artist]
 
@@ -219,7 +210,16 @@ function appendObject(target, source) {
   }, target)
 }
 
-function remapArtistDetails (currentRowNumber, charArray, artistDetails) {
+function convertFileToPDF(filePath, outputFormat, opts = {}) {
+  var opts = {
+    output: './convertedFiles/',
+    format: 'pdf'
+  }
+
+  libreconv(path.join(__dirname, filePath), outputFormat, opts)
+}
+
+function remapArtistDetails (currentRowNumber, _, artistDetails) {
   var characterPointer = 0
   return artistDetails.reduce(function(memo, cellDetails){
     var newCellLocation = charArray[characterPointer] + currentRowNumber
