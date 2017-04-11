@@ -4,7 +4,7 @@
   "description": "csv parser",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/*.js -- --cov"
   },
   "author": "James Youn <jamesyoun710@gmail.com>",
   "license": "ISC",
@@ -13,9 +13,7 @@
     "xlsx-style": "0.8.13"
   },
   "devDependencies": {
+    "standard": "10.0.1",
     "tap": "10.3.1"
-  },
-  "scripts": {
-    "test": "tap test/*.js -- --cov"
   }
 }
