@@ -10,37 +10,41 @@ var sheet = workbook.Sheets.Sheet1
 var headerRow = getHeaderRow(sheet)
 var range = sheet['!ref']
 
-var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
-  // skip header
-  if (cellNumber.slice(1) == 1 ) return memo
+var sortedArtistMap = sortByArtistName(sheet)
 
-  if (cellNumber[0] == 'A') {
+function sortByArtistName(sheet){
+  return Object.keys(sheet).reduce(function(memo, cellNumber) {
+    // skip header
+    if (cellNumber.slice(1) == 1 ) return memo
 
-    // collect all of the cells in the row
-    var artistDetails = charArray.map(function(letter) {
-      var cellLocation = letter + currentRowNumber
+    if (cellNumber[0] == 'A') {
 
-      return sheet[cellLocation]
-    })
+      // collect all of the cells in the row
+      var artistDetails = charArray.map(function(letter) {
+        var cellLocation = letter + currentRowNumber
 
-    var artistName = sheet[cellNumber].v
+        return sheet[cellLocation]
+      })
 
-    // sort rows by artist
-    if(!(artistName in memo)) {
-      var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
+      var artistName = sheet[cellNumber].v
 
-      memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
-      memo[artistName][artistRowCounter] = 2
-    } else {
-      var artistRowCounter = ++memo[artistName][artistRowCounter]
-      var remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
-      appendObject(memo[artistName], remappedArtistDetailsRow)
+      // sort rows by artist
+      if(!(artistName in memo)) {
+        var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
+
+        memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
+        memo[artistName][artistRowCounter] = 2
+      } else {
+        var artistRowCounter = ++memo[artistName][artistRowCounter]
+        var remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
+        appendObject(memo[artistName], remappedArtistDetailsRow)
+      }
+      currentRowNumber++
     }
-    currentRowNumber++
-  }
 
-  return memo
-}, {})
+    return memo
+  }, {})
+}
 
 function main() {
   var completedFiles = generateExcelFile(sortedArtistMap, range)
@@ -58,10 +62,38 @@ main()
 // #############
 
 function generateExcelFile(sortedArtistMap, range) {
-  var completedFiles = []
-  for (var artist in sortedArtistMap ) {
-    var range = range;
+  // total column widths: ~91
+  var wchColumnWidths = [
+    {wch: 10,
+      wpx: 40
+    },
+    {wch: 10,
+      wpx: 40
+    },
+    {wch: 15,
+      wpx: 60
+    },
+    {wch: 7,
+      wpx: 60
+    },
+    {wch: 17,
+      wpx: 70
+    },
+    {wch: 40,
+      wpx: 250
+    },
+    {wch: 20,
+      wpx: 70
+    },
+    {wch: 15,
+      wpx: 60
+    },
+    {wch: 10,
+      wpx: 80
+    }
+  ]
 
+  return Object.keys(sortedArtistMap).reduce(function(completedFiles, artist){
     var workBookBody = sortedArtistMap[artist]
 
     var artistCommissionTotal = getColumnSum(workBookBody, 'H')
@@ -78,37 +110,6 @@ function generateExcelFile(sortedArtistMap, range) {
     workBookBody['!printHeader'] = [1,1]
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
-    // total column widths: ~91
-    var wchColumnWidths = [
-      {wch: 10,
-        wpx: 40
-      },
-      {wch: 10,
-        wpx: 40
-      },
-      {wch: 15,
-        wpx: 60
-      },
-      {wch: 7,
-        wpx: 60
-      },
-      {wch: 17,
-        wpx: 70
-      },
-      {wch: 40,
-        wpx: 250
-      },
-      {wch: 20,
-        wpx: 70
-      },
-      {wch: 15,
-        wpx: 60
-      },
-      {wch: 10,
-        wpx: 80
-      }
-    ]
-
     workBookBody['!cols'] = wchColumnWidths
 
     var workbook = {
@@ -121,11 +122,12 @@ function generateExcelFile(sortedArtistMap, range) {
     }
 
     var fileName = artist + '.xlsx'
+
     XLSX.writeFile(workbook, fileName);
     completedFiles.push(fileName)
-  }
 
-  return completedFiles
+    return completedFiles
+  }, [])
 }
 
 function generateCellMetaData(cellValue) {
