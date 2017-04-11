@@ -29,6 +29,7 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
 
     if(!(artistName in memo)) {
       var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
+
       memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
       memo[artistName][artistRowCounter] = 2
     } else {
@@ -42,16 +43,6 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
   return memo
 }, {})
 
-// TODO: add catch try
-// try {
-  // TMP = path.join(fs.statSync('/tmp') && '/tmp', 'webtorrent')
-// } catch (err) {
-  // TMP = path.join(typeof os.tmpdir === 'function' ? os.tmpdir() : '/', 'webtorrent')
-// }
-
-
-
-
 function main() {
   var completedFiles = generateExcelFile(sortedArtistMap, range)
 
@@ -63,6 +54,10 @@ function main() {
 main()
 
 
+// #############
+// # UTILITIES #
+// #############
+
 function generateExcelFile(sortedArtistMap, range) {
   var completedFiles = []
   for (var artist in sortedArtistMap ) {
@@ -70,7 +65,7 @@ function generateExcelFile(sortedArtistMap, range) {
 
     var workBookBody = sortedArtistMap[artist]
 
-    var artistCommissionTotal = calculateArtistCommissionTotal(workBookBody)
+    var artistCommissionTotal = getColumnSum(workBookBody, 'H')
     var lastRowNumber = findLastRowNumberOnColumn(workBookBody, 'H')
 
     var commissionTotalCellLocation = 'H' + (lastRowNumber + 1)
@@ -79,13 +74,12 @@ function generateExcelFile(sortedArtistMap, range) {
     workBookBody[commissionTotalCellLocation] = generateCellMetaData(artistCommissionTotal)
     workBookBody[totalTitleCellLocation] = generateCellMetaData(artist + ' Total')
 
+    // ###########
+    // # CONFIGS #
+    // ###########
+
     workBookBody['!ref'] = range
     workBookBody['!printHeader'] = [1,1]
-
-    // ###########
-    // # OPTIONS #
-    // ###########
-
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
     // total column widths: 91
@@ -191,11 +185,11 @@ function findLastRowNumberOnColumn(workBookBody, column) {
   return parseInt(result)
 }
 
-function calculateArtistCommissionTotal(workBook) {
+function getColumnSum(workBook, columnLetter) {
   return  Object.keys(workBook).reduce(function(memo, cell) {
     var rowNumber = cell.slice(1)
 
-    if(cell[0] == 'H' && rowNumber != 1)
+    if(cell[0] == columnLetter && rowNumber != 1)
       memo += workBook[cell].v
 
     return memo
