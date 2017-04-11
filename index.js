@@ -1,10 +1,10 @@
-var XLSX = require('xlsx-style');
-var libreconv = require('libreconv').convert;
-var path = require('path');
-var charArray = "ABCDEFGHI".split('')
+var XLSX = require('xlsx-style')
+var libreconv = require('libreconv').convert
+var path = require('path')
+var charArray = 'ABCDEFGHI'.split('')
 var currentRowNumber = 2
 
-var workbook = XLSX.readFile('./test.xlsx', {cellStyles:true});
+var workbook = XLSX.readFile('./test.xlsx', { cellStyles: true })
 var sheet = workbook.Sheets.Sheet1
 
 var headerRow = getHeaderRow(sheet)
@@ -12,15 +12,14 @@ var range = sheet['!ref']
 
 var sortedArtistMap = sortByArtistName(sheet)
 
-function sortByArtistName(sheet){
-  return Object.keys(sheet).reduce(function(memo, cellNumber) {
+function sortByArtistName (sheet) {
+  return Object.keys(sheet).reduce(function (memo, cellNumber) {
     // skip header
-    if (cellNumber.slice(1) == 1 ) return memo
+    if (parseInt(cellNumber.slice(1)) === 1) return memo
 
-    if (cellNumber[0] == 'A') {
-
+    if (cellNumber[0] === 'A') {
       // collect all of the cells in the row
-      var artistDetails = charArray.map(function(letter) {
+      var artistDetails = charArray.map(function (letter) {
         var cellLocation = letter + currentRowNumber
 
         return sheet[cellLocation]
@@ -29,14 +28,14 @@ function sortByArtistName(sheet){
       var artistName = sheet[cellNumber].v
 
       // sort rows by artist
-      if(!(artistName in memo)) {
+      if (!(artistName in memo)) {
         var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
 
         memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
         memo[artistName][artistRowCounter] = 2
       } else {
         var artistRowCounter = ++memo[artistName][artistRowCounter]
-        var remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
+        remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
         appendObject(memo[artistName], remappedArtistDetailsRow)
       }
       currentRowNumber++
@@ -46,22 +45,21 @@ function sortByArtistName(sheet){
   }, {})
 }
 
-function main() {
+function main () {
   var completedFiles = generateExcelFile(sortedArtistMap, range)
 
-  completedFiles.forEach(function(file){
+  completedFiles.forEach(function (file) {
     convertFileToPDF(file, 'pdf')
   })
 }
 
 main()
 
-
 // #############
 // # UTILITIES #
 // #############
 
-function generateExcelFile(sortedArtistMap, range) {
+function generateExcelFile (sortedArtistMap, range) {
   // total column widths: ~91
   var wchColumnWidths = [
     {wch: 10,
@@ -93,7 +91,7 @@ function generateExcelFile(sortedArtistMap, range) {
     }
   ]
 
-  return Object.keys(sortedArtistMap).reduce(function(completedFiles, artist){
+  return Object.keys(sortedArtistMap).reduce(function (completedFiles, artist) {
     var workBookBody = sortedArtistMap[artist]
 
     var artistCommissionTotal = getColumnSum(workBookBody, 'H')
@@ -107,30 +105,30 @@ function generateExcelFile(sortedArtistMap, range) {
 
     // # CONFIGS
     workBookBody['!ref'] = range
-    workBookBody['!printHeader'] = [1,1]
+    workBookBody['!printHeader'] = [1, 1]
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
     workBookBody['!cols'] = wchColumnWidths
 
     var workbook = {
-      "SheetNames": [
-        "Main"
+      'SheetNames': [
+        'Main'
       ],
-      "Sheets": {
+      'Sheets': {
         'Main': workBookBody
       }
     }
 
     var fileName = artist + '.xlsx'
 
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(workbook, fileName)
     completedFiles.push(fileName)
 
     return completedFiles
   }, [])
 }
 
-function generateCellMetaData(cellValue) {
+function generateCellMetaData (cellValue) {
   var cellMetaTypes = {
     number: {
       t: 'n',
@@ -141,7 +139,8 @@ function generateCellMetaData(cellValue) {
           bold: true,
           sz: '10',
           color: { theme: '1', rgb: 'FFFFFF'  },
-          name: 'Calibri' },
+          name: 'Calibri'
+        },
         border: {}
       },
       w: ' 10.50 '
@@ -170,10 +169,9 @@ function generateCellMetaData(cellValue) {
   return cellMetaTypes[type]
 }
 
-
-function findLastRowNumberOnColumn(workBookBody, column) {
-  var result =  Object.keys(workBookBody).reduce(function(lastRowNumber, cell) {
-    if(cell[0] == column){
+function findLastRowNumberOnColumn (workBookBody, column) {
+  var result = Object.keys(workBookBody).reduce(function (lastRowNumber, cell) {
+    if (cell[0] === column) {
       var currentRowNumber = parseInt(cell.slice(1))
       lastRowNumber = (currentRowNumber > lastRowNumber) ? currentRowNumber : lastRowNumber
     }
@@ -183,26 +181,27 @@ function findLastRowNumberOnColumn(workBookBody, column) {
   return parseInt(result)
 }
 
-function getColumnSum(workBook, columnLetter) {
-  return  Object.keys(workBook).reduce(function(memo, cell) {
-    var rowNumber = cell.slice(1)
+function getColumnSum (workBook, columnLetter) {
+  return Object.keys(workBook).reduce(function (memo, cell) {
+    var rowNumber = parseInt(cell.slice(1))
 
-    if(cell[0] == columnLetter && rowNumber != 1)
+    if (cell[0] === columnLetter && rowNumber !== 1) {
       memo += workBook[cell].v
+    }
 
     return memo
   }, 0)
 }
 
-function appendObject(target, source) {
-  return Object.keys(source).reduce(function(memo, cellLocation) {
+function appendObject (target, source) {
+  return Object.keys(source).reduce(function (memo, cellLocation) {
     memo[cellLocation] = source[cellLocation]
 
     return memo
   }, target)
 }
 
-function convertFileToPDF(filePath, outputFormat, opts = {}) {
+function convertFileToPDF (filePath, outputFormat, opts = {}) {
   var opts = {
     output: './convertedFiles/',
     format: 'pdf'
@@ -214,7 +213,7 @@ function convertFileToPDF(filePath, outputFormat, opts = {}) {
 function remapArtistDetails (currentRowNumber, _, artistDetails) {
   var characterPointer = 0
 
-  return artistDetails.reduce(function(memo, cellDetails){
+  return artistDetails.reduce(function (memo, cellDetails) {
     var newCellLocation = charArray[characterPointer] + currentRowNumber
 
     memo[newCellLocation] = cellDetails
@@ -224,13 +223,13 @@ function remapArtistDetails (currentRowNumber, _, artistDetails) {
   }, {})
 }
 
-function getHeaderRow(sheet) {
+function getHeaderRow (sheet) {
   var header = {}
 
   for (var cell in sheet) {
-    if(cell == '!ref') {
+    if (cell === '!ref') {
       continue
-    } else if(cell.slice(1) == 1) {
+    } else if (parseInt(cell.slice(1)) === 1) {
       header[cell] = sheet[cell]
     } else {
       break
