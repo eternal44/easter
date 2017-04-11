@@ -1,24 +1,22 @@
 var XLSX = require('xlsx-style');
-var workbook = XLSX.readFile('./test.xlsx', {cellStyles:true});
 var libreconv = require('libreconv').convert;
 var path = require('path');
-var sheet = workbook.Sheets.Sheet1
-
-var headerRow = Object.keys(sheet).reduce(function(memo, key) {
-  if(key.slice(1) == 1) {
-    memo[key] = sheet[key]
-  }
-  return memo
-}, {})
-
 var charArray = "ABCDEFGHI".split('')
 var currentRowNumber = 2
+
+var workbook = XLSX.readFile('./test.xlsx', {cellStyles:true});
+var sheet = workbook.Sheets.Sheet1
+
+var headerRow = getHeaderRow(sheet)
 var range = sheet['!ref']
 
 var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
+  // skip header
   if (cellNumber.slice(1) == 1 ) return memo
 
   if (cellNumber[0] == 'A') {
+
+    // collect all of the cells in the row
     var artistDetails = charArray.map(function(letter) {
       var cellLocation = letter + currentRowNumber
 
@@ -27,6 +25,7 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
 
     var artistName = sheet[cellNumber].v
 
+    // sort rows by artist
     if(!(artistName in memo)) {
       var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
 
@@ -74,15 +73,12 @@ function generateExcelFile(sortedArtistMap, range) {
     workBookBody[commissionTotalCellLocation] = generateCellMetaData(artistCommissionTotal)
     workBookBody[totalTitleCellLocation] = generateCellMetaData(artist + ' Total')
 
-    // ###########
-    // # CONFIGS #
-    // ###########
-
+    // # CONFIGS
     workBookBody['!ref'] = range
     workBookBody['!printHeader'] = [1,1]
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
-    // total column widths: 91
+    // total column widths: ~91
     var wchColumnWidths = [
       {wch: 10,
         wpx: 40
@@ -215,11 +211,29 @@ function convertFileToPDF(filePath, outputFormat, opts = {}) {
 
 function remapArtistDetails (currentRowNumber, _, artistDetails) {
   var characterPointer = 0
+
   return artistDetails.reduce(function(memo, cellDetails){
     var newCellLocation = charArray[characterPointer] + currentRowNumber
+
     memo[newCellLocation] = cellDetails
     characterPointer++
 
     return memo
   }, {})
+}
+
+function getHeaderRow(sheet) {
+  var header = {}
+
+  for (var cell in sheet) {
+    if(cell == '!ref') {
+      continue
+    } else if(cell.slice(1) == 1) {
+      header[cell] = sheet[cell]
+    } else {
+      break
+    }
+  }
+
+  return header
 }
