@@ -13,6 +13,7 @@ var range = sheet['!ref']
 var sortedArtistMap = sortByArtistName(sheet)
 
 function sortByArtistName (sheet) {
+  var artistRowCounter = {}
   return Object.keys(sheet).reduce(function (memo, cellNumber) {
     // skip header
     if (parseInt(cellNumber.slice(1)) === 1) return memo
@@ -32,11 +33,18 @@ function sortByArtistName (sheet) {
         var remappedArtistDetailsRow = remapArtistDetails(2, charArray, artistDetails)
 
         memo[artistName] = appendObject(remappedArtistDetailsRow, headerRow)
-        memo[artistName][artistRowCounter] = 2
+        artistRowCounter.artistName = 2
       } else {
-        var artistRowCounter = ++memo[artistName][artistRowCounter]
-        remappedArtistDetailsRow = remapArtistDetails(artistRowCounter, charArray, artistDetails)
+        ++artistRowCounter.artistName
+
+        remappedArtistDetailsRow = remapArtistDetails(artistRowCounter.artistName, charArray, artistDetails)
         appendObject(memo[artistName], remappedArtistDetailsRow)
+
+        if (artistRowCounter.artistName % 36 === 0) {
+          var remappedHeaderRow = remapHeaderRow(headerRow, ++artistRowCounter.artistName)
+
+          appendObject(memo[artistName], remappedHeaderRow)
+        }
       }
       currentRowNumber++
     }
@@ -45,11 +53,27 @@ function sortByArtistName (sheet) {
   }, {})
 }
 
+function remapHeaderRow (header, currentArtistRow) {
+  return Object.keys(header).reduce(function (newHeader, cell, index) {
+    var column = charArray[index]
+    var newCellLocation = column + currentArtistRow
+
+    newHeader[newCellLocation] = headerRow[cell]
+
+    return newHeader
+  }, {})
+}
+
 function main () {
   var completedFiles = generateExcelFile(sortedArtistMap, range)
 
   completedFiles.forEach(function (file) {
-    convertFileToPDF(file, 'pdf')
+    var opts = {
+      output: './convertedFiles/',
+      format: 'pdf'
+    }
+
+    convertFileToPDF(file, 'pdf', opts)
   })
 }
 
@@ -138,7 +162,7 @@ function generateCellMetaData (cellValue) {
         font: {
           bold: true,
           sz: '10',
-          color: { theme: '1', rgb: 'FFFFFF'  },
+          color: { theme: '1', rgb: 'FFFFFF' },
           name: 'Calibri'
         },
         border: {}
@@ -155,7 +179,7 @@ function generateCellMetaData (cellValue) {
         font: {
           bold: true,
           sz: '10',
-          color: { theme: '1', rgb: 'FFFFFF'  },
+          color: { theme: '1', rgb: 'FFFFFF' },
           name: 'Calibri'
         },
         border: {}
@@ -183,9 +207,9 @@ function findLastRowNumberOnColumn (workBookBody, column) {
 
 function getColumnSum (workBook, columnLetter) {
   return Object.keys(workBook).reduce(function (memo, cell) {
-    var rowNumber = parseInt(cell.slice(1))
+    var rowNumber = cell.slice(1)
 
-    if (cell[0] === columnLetter && rowNumber !== 1) {
+    if (cell[0] === columnLetter && rowNumber !== 1 && (!isNaN(workBook[cell].v))) {
       memo += workBook[cell].v
     }
 
@@ -202,11 +226,6 @@ function appendObject (target, source) {
 }
 
 function convertFileToPDF (filePath, outputFormat, opts = {}) {
-  var opts = {
-    output: './convertedFiles/',
-    format: 'pdf'
-  }
-
   libreconv(path.join(__dirname, filePath), outputFormat, opts)
 }
 
