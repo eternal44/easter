@@ -2,17 +2,12 @@ var XLSX = require('xlsx-style');
 var workbook = XLSX.readFile('./test.xlsx', {cellStyles:true});
 var libreconv = require('libreconv').convert;
 var path = require('path');
-
-
-
-
 var sheet = workbook.Sheets.Sheet1
 
 var headerRow = Object.keys(sheet).reduce(function(memo, key) {
   if(key.slice(1) == 1) {
     memo[key] = sheet[key]
   }
-
   return memo
 }, {})
 
@@ -46,13 +41,14 @@ var sortedArtistMap = Object.keys(sheet).reduce(function(memo, cellNumber) {
   return memo
 }, {})
 
+// TODO: add catch try
+// try {
+  // TMP = path.join(fs.statSync('/tmp') && '/tmp', 'webtorrent')
+// } catch (err) {
+  // TMP = path.join(typeof os.tmpdir === 'function' ? os.tmpdir() : '/', 'webtorrent')
+// }
 
-// [ 'Leann Yan', 'Stacey Test', 'Mary Jane'  ]
-// console.info(Object.keys(sortedArtistMap['Stacey Test']).length) //63 - includes header
-// console.info(Object.keys(sortedArtistMap['Mary Jane']).length) //63 - includes header
-// console.info(Object.keys(sortedArtistMap['Leann Yan'])) //63 - includes header
-// console.log(sortedArtistMap['Leann Yan'].I9)
-// console.log(sortedArtistMap) //63 - includes header
+
 
 
 function convertFileToPDF(filePath, outputFormat, opts = {}) {
@@ -93,13 +89,7 @@ function generateExcelFile(sortedArtistMap) {
     workBookBody[totalTitleCellLocation] = generateCellMetaData(artist + ' Total')
 
     workBookBody['!ref'] = range
-    // workBookBody['!cols'] = sheet['!cols']
-
     workBookBody['!printHeader'] = [1,1]
-
-
-
-
 
     // ###########
     // # OPTIONS #
@@ -107,9 +97,8 @@ function generateExcelFile(sortedArtistMap) {
 
     workBookBody['!pageSetup'] = {orientation: 'landscape'}
 
+    // total column widths: 91
     var wchColumnWidths = [
-      // TODO: decide what font size is good
-      //   then match wpx & wch to it
       {wch: 10,
         wpx: 40
       },
@@ -138,7 +127,7 @@ function generateExcelFile(sortedArtistMap) {
         wpx: 80
       }
     ]
-    // total column widths: 91
+
     workBookBody['!cols'] = wchColumnWidths
 
     var workbook = {
@@ -211,10 +200,6 @@ function findLastRowNumberOnColumn(workBookBody, column) {
   return parseInt(result)
 }
 
-function checkKeys(obj) {
-  return Object.keys(obj)
-}
-
 function calculateArtistCommissionTotal(workBook) {
   return  Object.keys(workBook).reduce(function(memo, cell) {
     var rowNumber = cell.slice(1)
@@ -243,5 +228,4 @@ function remapArtistDetails (currentRowNumber, charArray, artistDetails) {
 
     return memo
   }, {})
-  characterPointer = 0
 }
