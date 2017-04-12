@@ -4,7 +4,8 @@
   "description": "csv parser",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/*.js -- --cov"
+    "test": "nodemon --exec 'tap test/*js -- --cov'",
+    "start": "node index.js && mkdir sortedExcelFiles && mv *.xlsx sortedExcelFiles"
   },
   "author": "James Youn <jamesyoun710@gmail.com>",
   "license": "ISC",

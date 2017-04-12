@@ -4,7 +4,7 @@ var path = require('path')
 var charArray = 'ABCDEFGHI'.split('')
 var currentRowNumber = 2
 
-var workbook = XLSX.readFile('./test.xlsx', { cellStyles: true })
+var workbook = XLSX.readFile('./target.xlsx', { cellStyles: true })
 var sheet = workbook.Sheets.Sheet1
 
 var headerRow = getHeaderRow(sheet)
@@ -69,7 +69,7 @@ function main () {
 
   completedFiles.forEach(function (file) {
     var opts = {
-      output: './convertedFiles/',
+      output: './convertedPDFFiles/',
       format: 'pdf'
     }
 
