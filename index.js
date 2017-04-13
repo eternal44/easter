@@ -1,3 +1,5 @@
+'use strict'
+
 var XLSX = require('xlsx-style')
 var libreconv = require('libreconv').convert
 var path = require('path')

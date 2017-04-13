@@ -17,7 +17,7 @@ $ npm start
 ```
 
 You'll find your sorted & converted PDFs in a directory called
-`convertedPDFFiles` and all excel files (including the original
+`convertedPDFFiles` and all excel files (except the original
 `target.xlsx`) in the sortedExcelFiles.
 
 ## Credits
@@ -28,5 +28,5 @@ MIT
 
 ## To do
 - ES6 conversion
-  - babel
-  - hot reloading
+- async file writes and reads
+- hande errors

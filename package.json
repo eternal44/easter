@@ -1,11 +1,14 @@
 {
   "name": "easter",
   "version": "1.0.0",
-  "description": "csv parser",
+  "description": "xlsx sort and converter",
+  "engines": {
+    "node": "7.9.0"
+  },
   "main": "index.js",
   "scripts": {
     "test": "nodemon --exec 'tap test/*js -- --cov'",
-    "start": "node index.js && mkdir sortedExcelFiles && mv *.xlsx sortedExcelFiles"
+    "start": "node index.js && mkdir -p sortedExcelFiles && mv *.xlsx sortedExcelFiles && mv sortedExcelFiles/target.xlsx ./"
   },
   "author": "James Youn <jamesyoun710@gmail.com>",
   "license": "ISC",
