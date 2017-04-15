@@ -3,6 +3,10 @@ This easter egg is for you.
 
 ## Installation
 ```
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ brew install git
+$ brew cask install libreoffice
+$ brew install node
 $ npm install
 ```
 

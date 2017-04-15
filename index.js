@@ -21,6 +21,7 @@ function sortByArtistName (sheet) {
     if (parseInt(cellNumber.slice(1)) === 1) return memo
 
     if (cellNumber[0] === 'A') {
+      console.log('sorting new row')
       // collect all of the cells in the row
       var artistDetails = charArray.map(function (letter) {
         var cellLocation = letter + currentRowNumber
@@ -68,6 +69,7 @@ function remapHeaderRow (header, currentArtistRow) {
 
 function main () {
   var completedFiles = generateExcelFile(sortedArtistMap, range)
+
 
   completedFiles.forEach(function (file) {
     var opts = {
@@ -118,6 +120,8 @@ function generateExcelFile (sortedArtistMap, range) {
   ]
 
   return Object.keys(sortedArtistMap).reduce(function (completedFiles, artist) {
+    console.log('Generating excile file for ' + artist)
+
     var workBookBody = sortedArtistMap[artist]
 
     var artistCommissionTotal = getColumnSum(workBookBody, 'H')
