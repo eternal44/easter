@@ -3,6 +3,7 @@
 var XLSX = require('xlsx-style')
 var libreconv = require('libreconv').convert
 var path = require('path')
+var async = require('async')
 var charArray = 'ABCDEFGHI'.split('')
 var currentRowNumber = 2
 
@@ -68,16 +69,17 @@ function remapHeaderRow (header, currentArtistRow) {
 }
 
 function main () {
-  var completedFiles = generateExcelFile(sortedArtistMap, range)
+  var completedExcelFiles = generateExcelFile(sortedArtistMap, range)
 
+  var opts = {
+    output: './convertedPDFFiles/',
+    format: 'pdf'
+  }
 
-  completedFiles.forEach(function (file) {
-    var opts = {
-      output: './convertedPDFFiles/',
-      format: 'pdf'
-    }
-
-    convertFileToPDF(file, 'pdf', opts)
+  async.each(completedExcelFiles, function (file, done) {
+    convertFileToPDF(file, 'pdf', opts, done)
+  }, function(err) {
+    console.log(err)
   })
 }
 
@@ -120,7 +122,7 @@ function generateExcelFile (sortedArtistMap, range) {
   ]
 
   return Object.keys(sortedArtistMap).reduce(function (completedFiles, artist) {
-    console.log('Generating excile file for ' + artist)
+    console.log('Generating excel file for ' + artist)
 
     var workBookBody = sortedArtistMap[artist]
 
@@ -231,8 +233,9 @@ function appendObject (target, source) {
   }, target)
 }
 
-function convertFileToPDF (filePath, outputFormat, opts = {}) {
+function convertFileToPDF (filePath, outputFormat, opts = {}, done) {
   libreconv(path.join(__dirname, filePath), outputFormat, opts)
+  done()
 }
 
 function remapArtistDetails (currentRowNumber, _, artistDetails) {
