@@ -24,9 +24,6 @@ You'll find your sorted & converted PDFs in a directory called
 `convertedPDFFiles` and all excel files (except the original
 `target.xlsx`) in the sortedExcelFiles.
 
-## Credits
-To my one and only.  We pair well together.
-
 ## License
 MIT
 
